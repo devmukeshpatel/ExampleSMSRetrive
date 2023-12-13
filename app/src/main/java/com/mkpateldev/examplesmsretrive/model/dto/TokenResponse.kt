@@ -2,7 +2,7 @@ package com.mkpateldev.examplesmsretrive.model.dto
 
 import com.google.gson.annotations.SerializedName
 
- class TokenResponse {
+class TokenResponse {
 
     @SerializedName(".expires")
     var expires: String? = null

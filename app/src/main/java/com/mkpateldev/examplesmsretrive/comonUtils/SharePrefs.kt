@@ -1,33 +1,16 @@
-package com.mkpateldev.examplesmsretrive.utils
+package com.mkpateldev.examplesmsretrive.comonUtils
 
 import android.content.Context
 import android.content.SharedPreferences
 
-class SharePrefs(var appContext: Context) {
-    private val sharedPreferences: SharedPreferences
-    private val SharePreFBaseUrl: SharedPreferences
-
-    init {
-        sharedPreferences = appContext.getSharedPreferences(
-            SHARED_PREFERENCE,
-            0
-        )
-        SharePreFBaseUrl = appContext.getSharedPreferences(
-            SHARED_PREFERENCE_BASE_URL,
-            0
-        )
-    }
+class SharePrefs(appContext: Context) {
+    private val sharedPreferences: SharedPreferences = appContext.getSharedPreferences(
+        SHARED_PREFERENCE,
+        0
+    )
 
     fun putString(key: String?, `val`: String?) {
         sharedPreferences.edit().putString(key, `val`).apply()
-    }
-
-
-    fun putStringBaseURL(key: String?, `val`: String?) {
-        val editor =
-            appContext.getSharedPreferences(SHARED_PREFERENCE_BASE_URL, Context.MODE_PRIVATE).edit()
-        editor.putString(key, `val`)
-        editor.apply()
     }
 
     fun getString(key: String): String {
@@ -66,7 +49,6 @@ class SharePrefs(var appContext: Context) {
         var TOKEN_PASSWORD = "Token_password"
         private var instance: SharePrefs? = null
         var SHARED_PREFERENCE = "Example"
-        var SHARED_PREFERENCE_BASE_URL = "SkSalesBaseUrl"
 
         @JvmStatic
         fun getInstance(ctx: Context): SharePrefs {

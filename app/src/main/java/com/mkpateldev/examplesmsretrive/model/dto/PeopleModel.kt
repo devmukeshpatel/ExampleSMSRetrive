@@ -12,8 +12,8 @@ class PeopleModel {
     @SerializedName("WarehouseId")
     var warehouseId = 0
 
-   /* @SerializedName("WarehouseName")
-    var warehouseName: String = ""*/
+    /* @SerializedName("WarehouseName")
+     var warehouseName: String = ""*/
 
     @SerializedName("PeopleFirstName")
     var peopleFirstName: String = ""

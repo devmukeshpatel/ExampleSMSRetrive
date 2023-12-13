@@ -1,4 +1,4 @@
-package com.mkpateldev.examplesmsretrive.utils
+package com.mkpateldev.examplesmsretrive.comonUtils
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData

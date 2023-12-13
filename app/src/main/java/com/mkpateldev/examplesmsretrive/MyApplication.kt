@@ -6,12 +6,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.media.MediaRecorder
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
-import android.os.ParcelFileDescriptor
-import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -19,20 +13,15 @@ import androidx.multidex.MultiDex
 import com.google.gson.JsonObject
 import com.mkpateldev.examplesmsretrive.model.api.APIService
 import com.mkpateldev.examplesmsretrive.model.api.RetrofitHelper.getInstance
-import com.mkpateldev.examplesmsretrive.utils.SharePrefs
+import com.mkpateldev.examplesmsretrive.comonUtils.LocaleHelper
+import com.mkpateldev.examplesmsretrive.comonUtils.SharePrefs
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
-import java.io.FileNotFoundException
 
 class MyApplication : Application(), LifecycleObserver {
-    var activity: Activity? = null
-    private var mediaRecorder: MediaRecorder? = null
-    private var contentValues: ContentValues? = null
-    private var audioFileUri: Uri? = null
     var apiService: APIService? = null
 
     override fun attachBaseContext(base: Context) {

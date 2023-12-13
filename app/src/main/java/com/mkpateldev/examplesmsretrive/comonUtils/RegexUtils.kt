@@ -1,4 +1,4 @@
-package com.mkpateldev.examplesmsretrive.utils
+package com.mkpateldev.examplesmsretrive.comonUtils
 
 import java.util.regex.Pattern
 
@@ -20,7 +20,7 @@ object RegexUtils {
 
     fun isValidMobileNo(mobile: String?): Boolean {
         val pattern = Pattern.compile(MOBILE_NO_PATTERN)
-        val matcher = pattern.matcher(mobile)
+        val matcher = pattern.matcher(mobile!!)
         return matcher.matches()
     }
 }

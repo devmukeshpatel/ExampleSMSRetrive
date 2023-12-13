@@ -1,12 +1,11 @@
-package com.mkpateldev.examplesmsretrive.utils
+package com.mkpateldev.examplesmsretrive.comonUtils
 
 /**
  * Used as a wrapper for data that is exposed via a LiveData that represents an event.
  */
 open class SingleEvent<out T>(private val content: T) {
 
-    var hasBeenHandled = false
-        private set // Allow external read but not write
+    private var hasBeenHandled = false
 
     /**
      * Returns the content and prevents its use again.

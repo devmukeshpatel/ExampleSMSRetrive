@@ -1,4 +1,4 @@
-package com.mkpateldev.examplesmsretrive
+package com.mkpateldev.examplesmsretrive.view
 
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
@@ -8,10 +8,14 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.IntentSender.SendIntentException
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.credentials.Credentials
 import com.google.android.gms.auth.api.credentials.HintRequest
 import com.google.android.gms.auth.api.phone.SmsRetriever
@@ -20,18 +24,44 @@ import com.google.android.gms.common.api.Status
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
+import com.mkpateldev.examplesmsretrive.R
+import com.mkpateldev.examplesmsretrive.databinding.ActivityMainBinding
+import com.mkpateldev.examplesmsretrive.model.Response.Response
+import com.mkpateldev.examplesmsretrive.model.dto.PeopleModel
+import com.mkpateldev.examplesmsretrive.model.dto.TokenResponse
+import com.mkpateldev.examplesmsretrive.comonUtils.SharePrefs
+import com.mkpateldev.examplesmsretrive.comonUtils.ViewUtils
+import com.mkpateldev.examplesmsretrive.comonUtils.ViewUtils.Companion.snackBar
+import com.mkpateldev.examplesmsretrive.comonUtils.observe
+import com.mkpateldev.examplesmsretrive.viewModel.AuthViewModel
+import com.mkpateldev.examplesmsretrive.model.repository.AppRepository
+import com.mkpateldev.examplesmsretrive.viewModel.AuthViewModelFactory
 
 
 class MainActivity : AppCompatActivity() {
     private val CREDENTIAL_PICKER_REQUEST = 1
+    private lateinit var binding: ActivityMainBinding
     private val RESOLVE_HINT = 1
     private val SMS_CONSENT_REQUEST = 2
     private var tv: TextView? = null
+    private lateinit var viewModel: AuthViewModel
+    private var mobile: String = ""
+    private var cTimer: CountDownTimer? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        viewModel = ViewModelProvider(
+            this, AuthViewModelFactory(
+                application,
+                AppRepository(applicationContext)
+            )
+        )[AuthViewModel::class.java]
 
-        tv = findViewById(R.id.textview2)
+        observe(viewModel.otpVerifyData, ::handleOtpVerifyResult)
+        observe(viewModel.tokenData, ::handleResultToken)
+
+        init()
 
         try {
             requestHint()
@@ -40,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val intentFilter: IntentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+        val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
         registerReceiver(smsVerificationReceiver, intentFilter)
         val task: Task<Void> = SmsRetriever.getClient(this).startSmsUserConsent(null)
         task.addOnSuccessListener(object : OnSuccessListener<Void?> {
@@ -51,6 +81,89 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("A", "Value:$task")
     }
+
+    fun changeNumber() {
+        isOtpVerify(false)
+        if (cTimer != null) {
+            cTimer?.cancel()
+        }
+    }
+
+    private fun handleResultToken(it: Response<TokenResponse>) {
+        when (it) {
+            is Response.Loading -> {}
+            is Response.Success -> {
+                it.data?.let {
+                    SharePrefs.getInstance(this@MainActivity)
+                        .putString(SharePrefs.TOKEN, it.access_token.toString())
+                }
+            }
+
+            is Response.Error -> {
+                binding.root.snackBar(it.errorMesssage.toString())
+            }
+        }
+    }
+
+    fun resendOtp() {
+
+    }
+
+    private fun init() {
+        tv = findViewById(R.id.etOtp)
+        isOtpVerify(true)
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (cTimer != null) {
+            cTimer?.cancel()
+        }
+    }
+
+    private fun handleOtpVerifyResult(it: Response<PeopleModel>) {
+        when (it) {
+            is Response.Loading -> {
+                ViewUtils.showProgressDialog(this)
+            }
+
+            is Response.Success -> {
+                it.data?.let {
+                    ViewUtils.hideProgressDialog()
+                    viewModel.callToken("password", "username", "password")
+                }
+            }
+
+            is Response.Error -> {
+                ViewUtils.hideProgressDialog();
+                binding.root.snackBar(it.errorMesssage.toString())
+            }
+        }
+    }
+
+    private fun isOtpVerify(isOtpVerify: Boolean) {
+        if (isOtpVerify) {
+            binding.llOtpVerify.visibility = View.VISIBLE
+            binding.tvMobileNumber.text = mobile
+            binding.tvResendOtp.visibility = View.INVISIBLE
+            startTimer(binding.tvOtpTimer, binding.tvResendOtp)
+        }
+    }
+
+    private fun startTimer(tvResendOtpTimer: TextView, tvResendOtp: TextView) {
+        cTimer = object : CountDownTimer(30000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                tvResendOtpTimer.text = "Resend" + millisUntilFinished / 1000
+            }
+
+            override fun onFinish() {
+                tvResendOtp.isEnabled = true
+                tvResendOtp.visibility = View.VISIBLE
+            }
+        }.start()
+    }
+
 
     // Construct a request for phone numbers and show the picker
     @Throws(SendIntentException::class)
@@ -64,6 +177,7 @@ class MainActivity : AppCompatActivity() {
             RESOLVE_HINT, null, 0, 0, 0
         )
     }
+
     private val smsVerificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (SmsRetriever.SMS_RETRIEVED_ACTION == intent.action) {

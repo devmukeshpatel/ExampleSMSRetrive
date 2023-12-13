@@ -1,4 +1,4 @@
-package com.mkpateldev.examplesmsretrive
+package com.mkpateldev.examplesmsretrive.comonUtils
 
 import android.annotation.TargetApi
 import android.content.Context

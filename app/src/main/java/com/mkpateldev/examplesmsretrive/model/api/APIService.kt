@@ -9,10 +9,8 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface APIService {
-
     @POST("api/SalesAppLogin/ViaOtp")
     suspend fun getOtp(@Body otpRequest: OtpRequest): Response<OtpVerifyResponse>
-
 
     @GET("api/SalesAppLogin/GetLogedSalesPerson")
     suspend fun verifyOtp(
