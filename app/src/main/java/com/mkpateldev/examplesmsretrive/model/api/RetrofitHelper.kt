@@ -33,19 +33,7 @@ object RetrofitHelper {
                     val request = chain.request()
                     response = chain.proceed(request)
                     if (response.code == 200) {
-                        if (!request.url.toString().contains("/token") &&
-                            !request.url.toString().contains("/appVersion") &&
-                            !request.url.toString().contains("/imageupload") &&
-                            !request.url.toString().contains("/UploadShopCloseFile") &&
-                            !request.url.toString().contains("/UploadCustomerShopImage") &&
-                            !request.url.toString().contains("/UploadPeopleProfileImage") &&
-                            !request.url.toString().contains("/UploadSalesReturnImage") &&
-                            !request.url.toString().contains("/hrmsLogin") &&
-                            !request.url.toString().contains("/place/autocomplete") &&
-                            !request.url.toString()
-                                .contains("/UPI/GenerateSalesAppOrderAmtQRCode") &&
-                            !request.url.toString().contains("/UPI/CheckTransactionStatus") &&
-                            !request.url.toString().contains("/UPI/TransactionDetail")
+                        if (!request.url.toString().contains("/token")
                         ) {
                             try {
                                 val jsonObject = JSONObject()
@@ -90,7 +78,7 @@ object RetrofitHelper {
         return Retrofit.Builder()
             .client(client)
             .baseUrl(
-                if (BuildConfig.DEBUG) BuildConfig.apiEndpoint else "https://uat.shopkirana.in"
+                if (BuildConfig.DEBUG) BuildConfig.apiEndpoint else "YOUR_END_POINT"
             )
             .addConverterFactory(GsonConverterFactory.create())
             .build()
