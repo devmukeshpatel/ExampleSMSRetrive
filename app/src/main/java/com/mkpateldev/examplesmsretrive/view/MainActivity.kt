@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.IntentSender.SendIntentException
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -24,15 +25,18 @@ import com.google.android.gms.common.api.Status
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
+import com.mkpateldev.examplesmsretrive.BuildConfig
 import com.mkpateldev.examplesmsretrive.R
 import com.mkpateldev.examplesmsretrive.databinding.ActivityMainBinding
 import com.mkpateldev.examplesmsretrive.model.Response.Response
 import com.mkpateldev.examplesmsretrive.model.dto.PeopleModel
 import com.mkpateldev.examplesmsretrive.model.dto.TokenResponse
 import com.mkpateldev.examplesmsretrive.comonUtils.SharePrefs
+import com.mkpateldev.examplesmsretrive.comonUtils.Utils
 import com.mkpateldev.examplesmsretrive.comonUtils.ViewUtils
 import com.mkpateldev.examplesmsretrive.comonUtils.ViewUtils.Companion.snackBar
 import com.mkpateldev.examplesmsretrive.comonUtils.observe
+import com.mkpateldev.examplesmsretrive.model.dto.OtpVerifyRequest
 import com.mkpateldev.examplesmsretrive.viewModel.AuthViewModel
 import com.mkpateldev.examplesmsretrive.model.repository.AppRepository
 import com.mkpateldev.examplesmsretrive.viewModel.AuthViewModelFactory
@@ -61,28 +65,50 @@ class MainActivity : AppCompatActivity() {
         observe(viewModel.otpVerifyData, ::handleOtpVerifyResult)
         observe(viewModel.tokenData, ::handleResultToken)
 
-        init()
+         init()
 
-        try {
-            requestHint()
-        } catch (e: SendIntentException) {
-            e.printStackTrace()
+         try {
+             requestHint()
+         } catch (e: SendIntentException) {
+             e.printStackTrace()
+         }
+
+
+         val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(smsVerificationReceiver, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(smsVerificationReceiver, intentFilter)
         }
-
-
-        val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-        registerReceiver(smsVerificationReceiver, intentFilter)
         val task: Task<Void> = SmsRetriever.getClient(this).startSmsUserConsent(null)
-        task.addOnSuccessListener(object : OnSuccessListener<Void?> {
-            override fun onSuccess(aVoid: Void?) {
-                Log.d("A", "Task Running")
-            }
-        })
-
-        Log.d("A", "Value:$task")
+         task.addOnSuccessListener(object : OnSuccessListener<Void?> {
+             override fun onSuccess(aVoid: Void?) {
+                 Log.d("A", "Task Running")
+             }
+         })
+         Log.d("A", "Value:$task")
     }
 
-    fun changeNumber() {
+    fun verifyOtp(v: View) {
+        var otp = binding.etOtp.text.toString().trim()
+        if (Utils.isNullOrEmpty(otp)) {
+            binding.root.snackBar("Mobile Number")
+        } else {
+            viewModel.otpVerify(
+                OtpVerifyRequest(
+                    mobile,
+                    true,
+                    "",
+                    BuildConfig.VERSION_NAME,
+                    Build.VERSION.RELEASE,
+                    Build.MODEL,
+                    Utils.getDeviceUniqueID(this)!!
+                )
+            )
+        }
+    }
+
+    fun changeNumber(v:View) {
         isOtpVerify(false)
         if (cTimer != null) {
             cTimer?.cancel()
@@ -105,14 +131,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun resendOtp() {
+    fun resendOtp(v: View) {
 
     }
 
     private fun init() {
         tv = findViewById(R.id.etOtp)
         isOtpVerify(true)
-
     }
 
     override fun onDestroy() {

@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.mkpateldev.examplesmsretrive.BuildConfig
@@ -40,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
         observe(viewModel.otpData, ::handleResult)
     }
 
-    fun getOtpClick() {
+    fun getOtpClick(v: View) {
         fetchOtp()
     }
 
